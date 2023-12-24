@@ -104,7 +104,9 @@ function Chatbox() {
         { text: input },
         ...images.map((image) => ({
           inlineData: {
-            data: image.inlineData.data.split(",")[1],
+            data:
+              image?.inlineData?.data &&
+              image?.inlineData?.data?.split(",")?.[1],
             mimeType: image.inlineData.mimeType,
           },
         })),

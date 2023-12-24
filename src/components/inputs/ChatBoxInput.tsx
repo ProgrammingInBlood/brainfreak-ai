@@ -55,9 +55,7 @@ function ChatBoxInput({ onSend, setImages, images, ...props }: Props) {
           maxSizeMB: 1,
           maxWidthOrHeight: 512,
         });
-
         const base64String = await convertToBase64(compressedFile);
-
         setImages((prev) => [...prev, base64String]);
       } catch (error) {
         console.error("Error compressing image:", error);
