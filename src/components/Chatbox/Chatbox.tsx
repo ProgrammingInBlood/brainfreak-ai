@@ -44,7 +44,7 @@ function Chatbox() {
   const model = useMemo(() => {
     const model = images.length > 0 ? "gemini-pro-vision" : "gemini-pro";
     return genAI.getGenerativeModel({ model });
-  }, [images]);
+  }, [images, genAI]);
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -71,7 +71,7 @@ function Chatbox() {
         router.push(`/?chatId=${id}`);
       }
     }
-  }, [chatId]);
+  }, [chatId, chats, createChat, router]);
 
   useEffect(() => {
     if (chatContainerRef.current)
