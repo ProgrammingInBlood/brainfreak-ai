@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import ChatboxPlaceholder from "./ChatboxPlaceholder";
 import ChatBoxInput from "../inputs/ChatBoxInput";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -46,20 +46,30 @@ function Chatbox() {
     return genAI.getGenerativeModel({ model });
   }, [images]);
 
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setInput(event.target.value);
+    },
+    []
+  );
+
+  const resetState = () => {
+    setImages([]);
+    setInput("");
+  };
+
   useEffect(() => {
     if (!chatId) {
       const findEmptyChat = chats.find(
         (chat) => chat.messages.length === 0 && chat.title === ""
       );
-
       if (findEmptyChat) {
-        router.push(`/?chatId=${findEmptyChat.id}&text=${input}`);
+        router.push(`/?chatId=${findEmptyChat.id}`);
       } else {
         const id = nanoid();
         createChat({ id, title: "", messages: [] });
-        router.push(`/?chatId=${id}&text=${input}`);
+        router.push(`/?chatId=${id}`);
       }
-      return;
     }
   }, [chatId]);
 
@@ -69,30 +79,9 @@ function Chatbox() {
         chatContainerRef.current.scrollHeight;
   }, [messages]);
 
-  const handleSendCheck = () => {
-    if (!input) return;
-    if (!chatId) {
-      const findEmptyChat = chats.find(
-        (chat) => chat.messages.length === 0 && chat.title === ""
-      );
-
-      if (findEmptyChat) {
-        router.push(`/?chatId=${findEmptyChat.id}&text=${input}`);
-      } else {
-        const id = nanoid();
-        createChat({ id, title: "", messages: [] });
-        router.push(`/?chatId=${id}&text=${input}`);
-      }
-      return;
-    }
-    if (chatId && text) {
-      router.push(`/?chatId=${chatId}`);
-    }
-  };
-
   //INITIALIZE CHAT ON SEND
-  const handleSend = async () => {
-    handleSendCheck();
+  const handleSend = useCallback(async () => {
+    if (!input) return;
     const messageId = nanoid();
     setInitialChatMessage(
       chatId,
@@ -100,9 +89,16 @@ function Chatbox() {
       input
     );
     setInitialChatMessage(chatId, { id: messageId, role: "model", parts: "" });
+    resetState();
+    const processChunk = async (chunk: any, messageId: string) => {
+      const chunkText = await chunk.text();
+      setContinuedChatMessage(chatId, {
+        id: messageId,
+        role: "model",
+        parts: chunkText,
+      });
+    };
 
-    setImages([]);
-    setInput("");
     if (images.length > 0) {
       const result = await model.generateContentStream([
         { text: input },
@@ -115,32 +111,27 @@ function Chatbox() {
       ]);
 
       for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        setContinuedChatMessage(chatId, {
-          id: messageId,
-          role: "model",
-          parts: chunkText,
-        });
+        await processChunk(chunk, messageId);
       }
     } else {
-      const chat = model.startChat({
-        history: messages,
-      });
+      const chat = model.startChat({ history: messages });
       const result = await chat.sendMessageStream(input);
+
       for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        setContinuedChatMessage(chatId, {
-          id: messageId,
-          role: "model",
-          parts: chunkText,
-        });
+        await processChunk(chunk, messageId);
       }
     }
-
-    if (text) {
-      router.push(`/?chatId=${chatId}`);
-    }
-  };
+  }, [
+    input,
+    images,
+    chatId,
+    messages,
+    model,
+    router,
+    setContinuedChatMessage,
+    setInitialChatMessage,
+    text,
+  ]);
 
   return (
     <div className="flex h-full flex-col">
@@ -197,7 +188,7 @@ function Chatbox() {
           onSend={handleSend}
           value={input}
           onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setInput(event.target.value)
+            handleChange(event)
           }
         />
       </div>
