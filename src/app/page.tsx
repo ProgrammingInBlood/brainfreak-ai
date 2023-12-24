@@ -1,7 +1,10 @@
-import Chatbox from "@/components/Chatbox/Chatbox";
-import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import dynamic from "next/dynamic";
+
+const Sidebar = dynamic(() => import("@/components/Sidebar"), { ssr: false });
+const Header = dynamic(() => import("@/components/Header"), { ssr: false });
+const Chatbox = dynamic(() => import("@/components/Chatbox/Chatbox"), {
+  ssr: false,
+});
 
 export default function Home() {
   return (
