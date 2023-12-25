@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useCallback, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -21,37 +21,32 @@ export default function Header() {
   const router = useRouter();
   const chatId = useSearchParams().get("chatId") || "";
 
-  const { createChat, chats, removeChat } = useStore((state) => ({
+  const { chats, removeChat } = useStore((state) => ({
     chats: state.chats?.slice().reverse(),
     createChat: state.setChat,
     removeChat: state.removeChat,
   }));
 
-  const createNewChat = () => {
-    const findEmptyChat = chats.find(
-      (chat) => chat.messages.length === 0 && chat.title === ""
-    );
-
-    if (findEmptyChat) {
-      router.push(`/?chatId=${findEmptyChat.id}`);
-    } else {
-      const id = nanoid();
-      createChat({ id, title: "", messages: [] });
-      router.push(`/?chatId=${id}`);
-    }
-
-    setMobileMenuOpen(false);
-  };
-
-  const handleChatClick = (id: string) => {
-    router.push(`/?chatId=${id}`);
-    setMobileMenuOpen(false);
-  };
-
-  const handleChatRemove = (id: string) => {
+  const createNewChat = useCallback(() => {
     router.push(`/`);
-    removeChat(id);
-  };
+    setMobileMenuOpen(false);
+  }, [router]);
+
+  const handleChatClick = useCallback(
+    (id: string) => {
+      router.push(`/?chatId=${id}`);
+      setMobileMenuOpen(false);
+    },
+    [router]
+  );
+
+  const handleChatRemove = useCallback(
+    (id: string) => {
+      router.push(`/`);
+      removeChat(id);
+    },
+    [router]
+  );
 
   return (
     <header className="bg-slate-900 visible md:hidden">

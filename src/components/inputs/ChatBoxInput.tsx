@@ -135,8 +135,8 @@ function ChatBoxInput({ onSend, setImages, images, ...props }: Props) {
                   type="file"
                   className="hidden"
                   onChange={handleFileChange}
-                  multiple // Allow multiple file selection
-                  accept=".jpg, .jpeg, .png, .gif"
+                  multiple
+                  accept="image/*"
                   ref={fileInputRef}
                 />
 
