@@ -50,6 +50,7 @@ function ChatBoxInput({ onSend, setImages, images, ...props }: Props) {
 
   const handleFileChange = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
+      event.preventDefault();
       const files = event.target.files;
       if (!files) return;
       for (const file of Array.from(files)) {
