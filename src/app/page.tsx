@@ -1,4 +1,8 @@
+"use client";
+
+import { initGA, logPageView } from "@/services/analytics";
 import dynamic from "next/dynamic";
+import { useEffect } from "react";
 
 const Sidebar = dynamic(() => import("@/components/Sidebar"), { ssr: false });
 const Header = dynamic(() => import("@/components/Header"), { ssr: false });
@@ -7,6 +11,10 @@ const Chatbox = dynamic(() => import("@/components/Chatbox/Chatbox"), {
 });
 
 export default function Home() {
+  useEffect(() => {
+    initGA();
+    logPageView();
+  }, []);
   return (
     <main className="relative z-0 flex h-full w-full overflow-hidden flex-col md:flex-row">
       <Sidebar />
