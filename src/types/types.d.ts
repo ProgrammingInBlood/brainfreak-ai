@@ -20,7 +20,7 @@ interface IChatSlice {
   setChat: (chat: IChat) => void;
   setInitialChatMessages: (
     id: string,
-    message: IMessage,
+    message: IMessage[],
     title?: string
   ) => void;
   setChatContuinationMessage: (id: string, message: IMessage) => void;

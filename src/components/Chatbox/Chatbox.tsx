@@ -7,6 +7,7 @@ import { nanoid } from "nanoid";
 import useStore from "@/store/useStore";
 import { useRouter, useSearchParams } from "next/navigation";
 import ChatFormatter from "../formatters/ChatFormatter";
+import Message from "../Message";
 
 interface Base64Image {
   inlineData: { data: string; mimeType: string };
@@ -58,20 +59,16 @@ function Chatbox() {
     setInput("");
   };
 
-  useEffect(() => {
+  const handleChatId = useCallback(() => {
     if (!chatId) {
-      const findEmptyChat = chats.find(
-        (chat) => chat.messages.length === 0 && chat.title === ""
-      );
-      if (findEmptyChat) {
-        router.push(`/?chatId=${findEmptyChat.id}`);
-      } else {
-        const id = nanoid();
-        createChat({ id, title: "", messages: [] });
-        router.push(`/?chatId=${id}`);
-      }
+      const id = nanoid();
+      createChat({ id, title: "", messages: [] });
+      router.push(`/?chatId=${id}`);
+      return id;
+    } else {
+      return chatId;
     }
-  }, [chatId, chats, createChat, router]);
+  }, [chatId, createChat, router]);
 
   useEffect(() => {
     if (chatContainerRef.current)
@@ -83,12 +80,17 @@ function Chatbox() {
   const handleSend = useCallback(async () => {
     if (!input) return;
     const messageId = nanoid();
+    const chatId = handleChatId();
+
     setInitialChatMessage(
       chatId,
-      { id: nanoid(), role: "user", parts: input, images },
+      [
+        { id: nanoid(), role: "user", parts: input, images },
+        { id: messageId, role: "model", parts: "" },
+      ],
       input
     );
-    setInitialChatMessage(chatId, { id: messageId, role: "model", parts: "" });
+
     resetState();
     const processChunk = async (chunk: any, messageId: string) => {
       const chunkText = await chunk.text();
@@ -137,7 +139,7 @@ function Chatbox() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden max-w-4xl mx-auto w-full">
         {messages.length === 0 ? (
           <ChatboxPlaceholder setInput={setInput} />
         ) : (
@@ -146,39 +148,7 @@ function Chatbox() {
             ref={chatContainerRef}
           >
             {messages.map((message, index) => {
-              if (message.role === "user") {
-                return (
-                  <div
-                    className="flex justify-end items-center mt-4 "
-                    key={index}
-                  >
-                    <div className=" rounded-xl p-4 bg-blue-500 max-w-[100%] text-sm md:text-xl">
-                      {message?.images?.map((image, index) => (
-                        <div key={index}>
-                          <img
-                            src={image.inlineData.data}
-                            alt={`upload-${index}-${message.id}`}
-                            className="object-cover w-full h-full max-w-52 rounded-xl  mb-4"
-                          />
-                        </div>
-                      ))}
-
-                      {message.parts}
-                    </div>
-                  </div>
-                );
-              } else {
-                return (
-                  <div
-                    className="flex justify-start items-center mt-4"
-                    key={index}
-                  >
-                    <div className="bg-slate-800 rounded-xl p-4 max-w-[100%]">
-                      <ChatFormatter text={message.parts} />
-                    </div>
-                  </div>
-                );
-              }
+              return <Message message={message} key={index} />;
             })}
           </div>
         )}

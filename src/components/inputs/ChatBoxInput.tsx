@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import SendIcon from "../icons/SendIcon";
 import ImageIcon from "../icons/ImageIcon";
 import imageCompression from "browser-image-compression";
@@ -16,57 +16,66 @@ interface Props extends React.HTMLProps<HTMLTextAreaElement> {
 
 function ChatBoxInput({ onSend, setImages, images, ...props }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    onSend();
-  };
 
-  const handleButtonClick = () => {
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      onSend();
+    },
+    [onSend]
+  );
+
+  const handleButtonClick = useCallback(() => {
     if (!fileInputRef.current) return;
     fileInputRef.current.click();
-  };
+  }, []);
 
-  const convertToBase64 = async (file: File): Promise<Base64Image> => {
-    const base64EncodedDataPromise = new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
+  const convertToBase64 = useCallback(
+    async (file: File): Promise<Base64Image> => {
+      const base64EncodedDataPromise = new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+      });
+      return {
+        inlineData: {
+          data: (await base64EncodedDataPromise) as string,
+          mimeType: file.type,
+        },
+      };
+    },
+    []
+  );
 
-    return {
-      inlineData: {
-        data: (await base64EncodedDataPromise) as string,
-        mimeType: file.type,
-      },
-    };
-  };
-
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const files = event.target.files;
-
-    if (!files) return;
-
-    for (const file of Array.from(files)) {
-      try {
-        const compressedFile = await imageCompression(file, {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 512,
-        });
-        const base64String = await convertToBase64(compressedFile);
-        setImages((prev) => [...prev, base64String]);
-      } catch (error) {
-        console.error("Error compressing image:", error);
+  const handleFileChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files;
+      if (!files) return;
+      for (const file of Array.from(files)) {
+        try {
+          const compressedFile = await imageCompression(file, {
+            maxSizeMB: 0.5,
+            maxWidthOrHeight: 1024,
+          });
+          const base64String = await convertToBase64(compressedFile);
+          setImages((prev) => [...prev, base64String]);
+        } catch (error) {
+          console.error("Error compressing image:", error);
+        }
       }
-    }
-  };
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    },
+    [convertToBase64, setImages]
+  );
 
-  const removeImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index);
-    setImages(newImages);
-  };
+  const removeImage = useCallback(
+    (index: number) => {
+      const newImages = images.filter((_, i) => i !== index);
+      setImages(newImages);
+    },
+    [images, setImages]
+  );
 
   return (
     <div className="w-full pt-2 md:pt-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:w-[calc(100%-.5rem)]">

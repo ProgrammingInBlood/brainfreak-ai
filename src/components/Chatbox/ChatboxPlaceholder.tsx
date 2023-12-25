@@ -62,7 +62,7 @@ function ChatboxPlaceholder({ setInput }: Props) {
   }, []);
 
   return (
-    <div className="w-full">
+    <div className="w-full mt-2 md:mt-8">
       <div className="flex flex-col justify-center items-center">
         <LogoIcon className=" scale-150 mb-5" />
         <h1 className="text-xl font-semibold text-white mb-5">

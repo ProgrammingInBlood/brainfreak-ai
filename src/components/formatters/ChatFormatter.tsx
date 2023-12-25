@@ -20,7 +20,7 @@ function ChatFormatter({ text }: Props) {
     <div className="chat">
       <div
         ref={containerRef}
-        className=" overflow-auto h-full bg-slate-800 rounded-xl  text-sm md:text-xl "
+        className=" overflow-auto h-full bg-slate-800 rounded-xl  text-sm md:text-base"
       />
     </div>
   );

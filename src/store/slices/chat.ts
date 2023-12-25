@@ -7,14 +7,14 @@ const createChatSlice: StateCreator<IChatSlice> = (set, get) => ({
       chats: [...state.chats, chat],
     })),
 
-  setInitialChatMessages: (id, message, title) =>
+  setInitialChatMessages: (id, messages, title) =>
     set((state) => ({
       chats: state.chats.map((chat) => {
         if (chat.id === id) {
           return {
             ...chat,
             title: title || chat.title,
-            messages: [...chat.messages, message],
+            messages: [...chat.messages, ...messages],
           };
         } else {
           return chat;
