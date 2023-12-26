@@ -81,6 +81,7 @@ function Chatbox() {
   const memoizedChats = useMemo(() => chats, [chats]);
 
   useEffect(() => {
+    if (!chatId) return;
     const chatExists = memoizedChats?.some((chat) => chat.id === chatId);
     if (chatExists) {
       return;
