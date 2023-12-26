@@ -130,14 +130,11 @@ function Chatbox() {
   }, [
     input,
     images,
-    chatId,
     messages,
     model,
-    router,
     setContinuedChatMessage,
     setInitialChatMessage,
     handleChatId,
-    text,
   ]);
 
   return (
