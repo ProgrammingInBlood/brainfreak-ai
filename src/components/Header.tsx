@@ -45,7 +45,7 @@ export default function Header() {
       router.push(`/`);
       removeChat(id);
     },
-    [router]
+    [router, removeChat]
   );
 
   return (

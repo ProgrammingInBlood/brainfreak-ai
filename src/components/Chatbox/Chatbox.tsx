@@ -37,9 +37,11 @@ function Chatbox() {
   }));
 
   //INITIALIZE GOOGLE AI
-  const genAI = new GoogleGenerativeAI(
-    process.env.NEXT_PUBLIC_GEMINI_API_KEY as string
-  );
+  const genAI = useMemo(() => {
+    return new GoogleGenerativeAI(
+      process.env.NEXT_PUBLIC_GEMINI_API_KEY as string
+    );
+  }, []);
 
   //INITIALIZE MODEL
   const model = useMemo(() => {
