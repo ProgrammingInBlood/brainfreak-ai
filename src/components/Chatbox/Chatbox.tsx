@@ -78,6 +78,18 @@ function Chatbox() {
         chatContainerRef.current.scrollHeight;
   }, [messages]);
 
+  const memoizedChats = useMemo(() => chats, [chats]);
+
+  useEffect(() => {
+    const chatExists = memoizedChats?.some((chat) => chat.id === chatId);
+    if (chatExists) {
+      return;
+    }
+    router.push(`/`);
+  }, [memoizedChats, chatId, router]);
+
+  // Rest of your component logic...
+
   //INITIALIZE CHAT ON SEND
   const handleSend = useCallback(async () => {
     if (!input) return;
