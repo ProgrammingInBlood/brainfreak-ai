@@ -136,6 +136,7 @@ function Chatbox() {
     router,
     setContinuedChatMessage,
     setInitialChatMessage,
+    handleChatId,
     text,
   ]);
 
