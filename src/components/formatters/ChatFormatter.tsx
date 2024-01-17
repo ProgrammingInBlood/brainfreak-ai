@@ -11,9 +11,13 @@ function ChatFormatter({ text }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-    containerRef.current.innerHTML = marked(text) as string;
-    hljs.highlightAll();
+    try {
+      if (!containerRef.current) return;
+      containerRef.current.innerHTML = marked(text) as string;
+      hljs.highlightAll();
+    } catch (error) {
+      console.log("ChatFormatter", error);
+    }
   }, [text]);
 
   return (

@@ -2,16 +2,42 @@
 import React, { useCallback, useEffect, useMemo } from "react";
 import ChatboxPlaceholder from "./ChatboxPlaceholder";
 import ChatBoxInput from "../inputs/ChatBoxInput";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  GoogleGenerativeAI,
+  HarmBlockThreshold,
+  HarmCategory,
+} from "@google/generative-ai";
 import { nanoid } from "nanoid";
 import useStore from "@/store/useStore";
 import { useRouter, useSearchParams } from "next/navigation";
-import ChatFormatter from "../formatters/ChatFormatter";
 import Message from "../Message";
 
 interface Base64Image {
   inlineData: { data: string; mimeType: string };
 }
+
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_UNSPECIFIED,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+];
 
 function Chatbox() {
   const router = useRouter();
@@ -46,7 +72,10 @@ function Chatbox() {
   //INITIALIZE MODEL
   const model = useMemo(() => {
     const model = images.length > 0 ? "gemini-pro-vision" : "gemini-pro";
-    return genAI.getGenerativeModel({ model });
+    return genAI.getGenerativeModel({
+      model,
+      safetySettings: safetySettings,
+    });
   }, [images, genAI]);
 
   const handleChange = useCallback(
@@ -108,7 +137,7 @@ function Chatbox() {
 
     resetState();
     const processChunk = async (chunk: any, messageId: string) => {
-      const chunkText = await chunk.text();
+      const chunkText = (await chunk) ? chunk.text() : "";
       setContinuedChatMessage(chatId, {
         id: messageId,
         role: "model",
